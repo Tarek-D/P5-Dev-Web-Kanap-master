@@ -1,25 +1,3 @@
-// 1 : Récupérer les infos du panier - OK
-// 2 : Créer une fonction qui affiche les élements du panier à chaque tour de boucle - OK
-// 3 : Récupérer tous les infos de l'API - OK
-// 4 : Mise en place de la suppresion d'un produit - OK 
-// 5 : Mise en place de la modification de quantité - OK
-
-// 6 : Validation du formulaire
-// 7 : Envoi sur la route en "POST" OK mais pas les bonnes data du formulaire
-// 8 : Passage sur la page confirmation.html 
-
-
-/*
-
-Deleteproduct
-ModifyQty
-CalculTotal
-CalculQty
-
-X fonction pour chaque input du formulaire
- 
-OrderPost
-*/
 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 for (product of cart) {
     fetchProduct(product)
@@ -29,7 +7,6 @@ let inputQuantity = document.getElementsByClassName('itemQuantity');
 let deleteBtn = document.getElementsByClassName('deleteItem');
 let totalQuantitySpan = document.getElementById('totalQuantity')
 let totalPriceSpan = document.getElementById('totalPrice');
-
 
 const btnMakeOrder = document.getElementById('order');
 btnMakeOrder.addEventListener('click', function () {
@@ -70,14 +47,10 @@ function fetchProduct(product) {
         .then(function () {
             for (let i = 0; i < inputQuantity.length; i++) {
                 inputQuantity[i].addEventListener('change', function (e) {
-                    modifQuantity(this, e)
+                    modifyQuantity(this, e)
                 })
-            }
-        })
-        .then(function () {
-            for (let i = 0; i < deleteBtn.length; i++) {
                 deleteBtn[i].addEventListener('click', function (e) {
-                    deleteProduct(this, e)
+                        deleteProduct(this, e)
                 })
             }
         })
@@ -87,7 +60,7 @@ function fetchProduct(product) {
         })
 }
 
-function modifQuantity(element, event) {
+function modifyQuantity(element, event) {
     let article = element.closest('article');
     let newQuantity = event.target.valueAsNumber;
     let productID = article.dataset.id;
@@ -109,6 +82,7 @@ function deleteProduct(element, event) {
     let productColor = article.dataset.color;
     let filtered = cart.filter((item) => item.id !== productID || item.color !== productColor);
     localStorage.setItem('cart', JSON.stringify(filtered));
+    cart = JSON.parse(localStorage.getItem('cart') || '[]')
     article.remove()
     totalQuantity()
     totalPrice()
@@ -136,25 +110,22 @@ function totalPrice() {
                 totalAmount += api.price * quantity
                 totalPriceSpan.textContent = totalAmount
             })
-
     }
 }
 
 function validFirstName() {
-    let isValid = false
     let firstNameInput = document.getElementById('firstName')
     let error = document.getElementById('firstNameErrorMsg')
     firstNameInput.addEventListener('input', function (e) {
         var value = e.target.value;
         if (value === '') {
             error.textContent = 'Veuillez renseigner le champ Prénom svp'
-            isValid === false
+            return false
         } else {
             error.textContent = ''
-            isValid === true
+            return true
         }
     })
-    return isValid
 }
 validFirstName()
 
@@ -171,7 +142,7 @@ function validLastName() {
             return true
         }
     })
-    
+
 }
 validLastName()
 
@@ -227,36 +198,32 @@ validEmail()
 
 async function postOrder() {
 
+    if (cart.length === 0) return alert('Votre panier est vide')
+    // validFirstName === true && === true && validLastName() === true && validAddress() === true && validCity() === true && validEmail() === true) 
 
-    // if (validFirstName === true && validLastName === true && validAddress === true && validCity === true && validEmail === true) {
+    let products = cart.map(item => item.id);
+    console.log(products)
 
-        let products = cart.map(item => item.id);
-        console.log(products)
-
-        let response = await fetch('http://localhost:3000/api/products/order/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
+    let response = await fetch('http://localhost:3000/api/products/order/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+            contact: {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                email: document.getElementById('email').value
             },
-            body: JSON.stringify({
-                contact: {
-                    firstName: document.getElementById('firstName').value,
-                    lastName: document.getElementById('lastName').value,
-                    address: document.getElementById('address').value,
-                    city: document.getElementById('city').value,
-                    email: document.getElementById('email').value
-                },
-                products: products
-            })
-        });
+            products: products
+        })
+    });
 
-        let result = await response.json();
+    let result = await response.json();
 
-        localStorage.clear();
+    localStorage.clear();
 
-        window.location.href = 'confirmation.html?id=' + result.orderId;
-
-    // } else {
-    //   return alert('Veuillez vérifiez les champs du formulaire')
-    // }
+    window.location.href = 'confirmation.html?id=' + result.orderId;
 }
