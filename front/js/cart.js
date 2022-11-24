@@ -8,6 +8,7 @@ let deleteBtn = document.getElementsByClassName('deleteItem');
 let totalQuantitySpan = document.getElementById('totalQuantity');
 let totalPriceSpan = document.getElementById('totalPrice');
 
+// All inputs
 let firstNameInput = document.getElementById('firstName');
 let lastNameInput = document.getElementById('lastName');
 let addressInput = document.getElementById('address');
@@ -28,6 +29,7 @@ function fetchProduct(product) {
             }
         })
         .then(function (api) {
+            // Populate article(s)
             let element = `<article class="cart__item" data-id="${api._id}" data-color="${product.color}">
             <div class="cart__item__img">
               <img src=${api.imageUrl} alt="Photographie d'un canapé">
@@ -90,9 +92,9 @@ function deleteProduct(element, event) {
     let filtered = cart.filter((item) => item.id !== productID || item.color !== productColor);
     localStorage.setItem('cart', JSON.stringify(filtered));
     cart = JSON.parse(localStorage.getItem('cart') || '[]')
-    article.remove()
     totalQuantity()
     totalPrice()
+    article.remove()
 }
 
 function totalQuantity() {
@@ -105,6 +107,9 @@ function totalQuantity() {
 
 function totalPrice() {
     let totalAmount = 0
+    if (cart.length >= 0){
+        totalPriceSpan.textContent = 0
+    }
     for (product of cart) {
         let quantity = product.quantity
         fetch("http://localhost:3000/api/products/" + product.id)
@@ -129,62 +134,29 @@ function validFirstName(firstNameInput) {
         error.textContent = ''
         return true
     }
-    // firstNameInput.addEventListener('input', function (e) {
-    //     var value = e.target.value;
-    //     if (value === '') {
-    //         error.textContent = 'Veuillez renseigner le champ Prénom svp'
-    //         return false
-    //     } else {
-    //         error.textContent = ''
-    //         return true
-    //     }
-    // })
 }
-//validFirstName()
 
 function validLastName(lastNameInput) {
-    let error = document.getElementById('lastNameErrorMsg')
+    let error = document.getElementById('lastNameErrorMsg');
     if (lastNameInput.value === '') {
-        error.textContent = 'Veuillez renseigner le champ Nom svp'
-        return false
+        error.textContent = 'Veuillez renseigner le champ Nom svp';
+        return false;
     } else {
         error.textContent = ''
-        return true
+        return true;
     }
-    // lastNameInput.addEventListener('input', function (e) {
-    //     var value = e.target.value;
-    //     if (value === '') {
-    //         error.textContent = 'Veuillez renseigner le champ Nom svp'
-    //         return false
-    //     } else {
-    //         error.textContent = ''
-    //         return true
-    //     }
-    //})
 }
-//validLastName()
 
 function validAddress(addressInput) {
     let error = document.getElementById('addressErrorMsg')
     if (addressInput.value === '') {
         error.textContent = 'Veuillez renseigner le champ adresse svp'
-        return false
+        return false;
     } else {
         error.textContent = ''
-        return true
+        return true;
     }
-    // addressInput.addEventListener('input', function (e) {
-    //     var value = e.target.value;
-    //     if (value === '') {
-    //         error.textContent = 'Veuillez renseigner le champ adresse svp'
-    //         return false
-    //     } else {
-    //         error.textContent = ''
-    //         return true
-    //     }
-    // })
 }
-//validAddress()
 
 function validCity(cityInput) {
     let error = document.getElementById('cityErrorMsg')
@@ -195,23 +167,12 @@ function validCity(cityInput) {
         error.textContent = ''
         return true
     }
-    // addressInput.addEventListener('input', function (e) {
-    //     var value = e.target.value;
-    //     if (value === "") {
-    //         error.textContent = 'Veuillez renseigner le champ Ville svp'
-    //         return false
-    //     } else {
-    //         error.textContent = ''
-    //         return true
-    //     }
-    // })
 }
-//validCity()
-
 
 function validEmail(emailInput) {
     let error = document.getElementById('emailErrorMsg')
     var validRegex = new RegExp(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/);
+    // Check if string@string.string
     if (emailInput.value.match(validRegex)) {
         error.textContent = ''
         return true
@@ -219,30 +180,21 @@ function validEmail(emailInput) {
         error.textContent = 'Le champ est email est incorrect'
         return false
     }
-    // addressInput.addEventListener('input', function (e) {
-    //     var value = e.target.value;
-    //     if (value.match(validRegex)) {
-    //         error.textContent = ''
-    //         return true
-    //     } else {
-    //         error.textContent = 'Le champ est email est incorrect'
-    //         return false
-    //     }
-    // })
 }
-// validEmail()
 
 async function postOrder() {
 
     if (cart.length === 0) return alert('Votre panier est vide');
 
+    // Check all inputs
     if (validFirstName(firstNameInput) === true &&
         validLastName(lastNameInput) === true &&
         validAddress(addressInput) === true &&
         validCity(cityInput) === true &&
         validEmail(emailInput) === true) {
 
-        let products = cart.map(item => item.id);
+        // Tranform array of object into array of string id
+        let products = cart.map(item => item.id); 
 
         let response = await fetch('http://localhost:3000/api/products/order/', {
             method: 'POST',
